@@ -1,0 +1,55 @@
+{
+  "evaluation_mode": "MOCK_SIMULATION",
+  "disclaimer": "Evaluated using deterministic mock advisor logic. External Gemini API calls are not made during benchmark.",
+  "datasets_evaluated": [
+    "online_retail_ii",
+    "olist"
+  ],
+  "case_count": 12,
+  "dataset_breakdown": {
+    "online_retail_ii": 6,
+    "olist": 6
+  },
+  "metrics": {
+    "json_valid": {
+      "rate": 1.0,
+      "ci_95": [
+        1.0,
+        1.0
+      ]
+    },
+    "consistent_segment": {
+      "rate": 1.0,
+      "ci_95": [
+        1.0,
+        1.0
+      ]
+    },
+    "driver_consistency": {
+      "rate": 1.0,
+      "ci_95": [
+        1.0,
+        1.0
+      ]
+    },
+    "no_unsupported_customer_claims": {
+      "rate": 1.0,
+      "ci_95": [
+        1.0,
+        1.0
+      ]
+    },
+    "pii_adversarial_guardrail": {
+      "rate": 1.0,
+      "tested_count": 4,
+      "blocked_count": 4
+    }
+  },
+  "failures": {
+    "json_valid": 0,
+    "consistent_segment": 0,
+    "driver_consistency": 0,
+    "no_unsupported_customer_claims": 0,
+    "faithful_no_customer_claims": 0
+  }
+}

@@ -1,0 +1,30 @@
+### Table 2: Unsupervised Clustering Evaluation Across Algorithm Candidates and K Values
+
+Geometric separation and compactness metrics evaluated strictly on the 80% training partition sample (N=2,000).
+
+| Dataset | Algorithm | K | Silhouette | Davies_Bouldin | Calinski_Harabasz | Min_Cluster_Size | Selected |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Online Retail II | KMeans | 3 | 0.2524 | 1.4625 | 797.3 | 482 | YES (Winner) |
+| Online Retail II | Agglomerative Ward | 3 | 0.2408 | 1.5735 | 647.4 | 366 | No |
+| Online Retail II | Gaussian Mixture | 3 | 0.1655 | 1.7975 | 598.5 | 529 | No |
+| Online Retail II | KMeans | 4 | 0.2135 | 1.4517 | 717.4 | 351 | No |
+| Online Retail II | Agglomerative Ward | 4 | 0.1978 | 1.5165 | 559.7 | 325 | No |
+| Online Retail II | Gaussian Mixture | 4 | 0.1587 | 1.9403 | 445.2 | 102 | No |
+| Online Retail II | KMeans | 5 | 0.2251 | 1.3631 | 657.4 | 295 | No |
+| Online Retail II | Agglomerative Ward | 5 | 0.1712 | 1.5524 | 529.4 | 303 | No |
+| Online Retail II | Gaussian Mixture | 5 | 0.1582 | 1.6803 | 402.1 | 14 | No |
+| Online Retail II | KMeans | 6 | 0.2231 | 1.3613 | 602.8 | 118 | No |
+| Online Retail II | Agglomerative Ward | 6 | 0.1676 | 1.5263 | 485.7 | 56 | No |
+| Online Retail II | Gaussian Mixture | 6 | 0.107 | 1.9194 | 399.7 | 212 | No |
+| Brazilian E-Commerce (Olist) | KMeans | 3 | 0.3625 | 1.0979 | 416.0 | 44 | No |
+| Brazilian E-Commerce (Olist) | Agglomerative Ward | 3 | 0.3559 | 1.1642 | 405.6 | 44 | No |
+| Brazilian E-Commerce (Olist) | Gaussian Mixture | 3 | 0.3769 | 1.464 | 367.4 | 44 | YES (Winner) |
+| Brazilian E-Commerce (Olist) | KMeans | 4 | 0.2139 | 1.4417 | 449.0 | 44 | No |
+| Brazilian E-Commerce (Olist) | Agglomerative Ward | 4 | 0.1899 | 1.5885 | 395.4 | 44 | No |
+| Brazilian E-Commerce (Olist) | Gaussian Mixture | 4 | 0.2002 | 1.5026 | 431.1 | 44 | No |
+| Brazilian E-Commerce (Olist) | KMeans | 5 | 0.2042 | 1.3702 | 435.6 | 44 | No |
+| Brazilian E-Commerce (Olist) | Agglomerative Ward | 5 | 0.1927 | 1.3492 | 381.1 | 31 | No |
+| Brazilian E-Commerce (Olist) | Gaussian Mixture | 5 | 0.142 | 1.64 | 310.7 | 40 | No |
+| Brazilian E-Commerce (Olist) | KMeans | 6 | 0.2163 | 1.2147 | 438.5 | 31 | No |
+| Brazilian E-Commerce (Olist) | Agglomerative Ward | 6 | 0.1785 | 1.3526 | 386.0 | 31 | No |
+| Brazilian E-Commerce (Olist) | Gaussian Mixture | 6 | 0.1802 | 1.6563 | 328.3 | 42 | No |

@@ -10,4 +10,6 @@ streamlit
 openai
 openpyxl
 python-calamine
+python-dotenv
 pytest
+google-genai

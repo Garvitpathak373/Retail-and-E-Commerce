@@ -39,7 +39,7 @@ def _quality_report(raw_rows: int, clean_rows: int, missing_customers: int, dupl
     }
 
 
-def build_online_retail_features(config: DatasetConfig | None = None) -> tuple[pd.DataFrame, dict]:
+def build_online_retail_features(config: DatasetConfig | None = None, return_temporal_split: bool = False) -> tuple[pd.DataFrame, dict] | tuple[pd.DataFrame, dict, pd.DataFrame]:
     """Build RFM and behavior features from the two Online Retail II worksheets.
 
     Positive, non-cancelled lines define purchase value. Cancellation/negative lines are
@@ -70,6 +70,11 @@ def build_online_retail_features(config: DatasetConfig | None = None) -> tuple[p
     all_line_parts: list[pd.Series] = []
     return_line_parts: list[pd.Series] = []
     product_pairs: list[pd.DataFrame] = []
+    hist_parts: list[pd.DataFrame] = []
+    fut_parts: list[pd.DataFrame] = []
+    cutoff = pd.Timestamp("2011-06-10")
+    eval_end = cutoff + pd.Timedelta(days=180)
+
     for sheet_name in sheet_names:
         _log(f"Online Retail II: reading {sheet_name}")
         data = pd.read_excel(workbook, sheet_name=sheet_name, engine=engine)
@@ -104,6 +109,19 @@ def build_online_retail_features(config: DatasetConfig | None = None) -> tuple[p
         all_line_parts.append(valid.groupby("Customer_ID").size())
         return_line_parts.append(valid.loc[valid["is_return"]].groupby("Customer_ID").size())
         product_pairs.append(sales[["Customer_ID", "StockCode"]].drop_duplicates())
+
+        # Collect longitudinal observations for temporal validation
+        hist_sales = sales[sales["InvoiceDate"] < cutoff]
+        if not hist_sales.empty:
+            hist_parts.append(hist_sales.groupby("Customer_ID", as_index=False).agg(
+                hist_monetary=("line_value", "sum"), hist_frequency=("Invoice", "nunique")
+            ))
+        fut_sales = sales[(sales["InvoiceDate"] >= cutoff) & (sales["InvoiceDate"] < eval_end)]
+        if not fut_sales.empty:
+            fut_parts.append(fut_sales.groupby("Customer_ID", as_index=False).agg(
+                future_monetary=("line_value", "sum"), future_frequency=("Invoice", "nunique")
+            ))
+
         del data, valid, sales
         gc.collect()
     if not customer_parts:
@@ -132,6 +150,16 @@ def build_online_retail_features(config: DatasetConfig | None = None) -> tuple[p
         customer_count=len(features), snapshot_date=str(snapshot.date()),
         rules="Positive non-cancelled lines form sales; cancellation/negative lines only form Return_Rate.",
     )
+
+    if return_temporal_split:
+        hist_df = pd.concat(hist_parts, ignore_index=True).groupby("Customer_ID", as_index=False).sum() if hist_parts else pd.DataFrame(columns=["Customer_ID", "hist_monetary", "hist_frequency"])
+        fut_df = pd.concat(fut_parts, ignore_index=True).groupby("Customer_ID", as_index=False).sum() if fut_parts else pd.DataFrame(columns=["Customer_ID", "future_monetary", "future_frequency"])
+        temporal_split_df = hist_df.merge(fut_df, on="Customer_ID", how="left")
+        temporal_split_df["future_frequency"] = temporal_split_df["future_frequency"].fillna(0)
+        temporal_split_df["future_monetary"] = temporal_split_df["future_monetary"].fillna(0.0)
+        temporal_split_df["future_repurchased"] = (temporal_split_df["future_frequency"] > 0).astype(int)
+        return features, quality, temporal_split_df
+
     return features, quality
 
 
@@ -152,13 +180,13 @@ def build_olist_features(config: DatasetConfig | None = None) -> tuple[pd.DataFr
         raise FileNotFoundError(f"Missing Olist source files: {missing}")
 
     _log("Olist: reading orders and customers")
-    orders = pd.read_csv(paths["orders"], usecols=["order_id", "customer_id", "order_status", "order_purchase_timestamp", "order_delivered_customer_date"])
+    orders = pd.read_csv(paths["orders"], usecols=["order_id", "customer_id", "order_status", "order_purchase_timestamp", "order_delivered_customer_date", "order_estimated_delivery_date"])
     customers = pd.read_csv(paths["customers"], usecols=["customer_id", "customer_unique_id"])
     raw_rows = len(orders) + len(customers)
 
     orders = orders.drop_duplicates("order_id").copy()
     customers = customers.drop_duplicates("customer_id").copy()
-    for column in ["order_purchase_timestamp", "order_delivered_customer_date"]:
+    for column in ["order_purchase_timestamp", "order_delivered_customer_date", "order_estimated_delivery_date"]:
         orders[column] = pd.to_datetime(orders[column], errors="coerce")
     delivered = orders.loc[
         (orders["order_status"] == "delivered") & orders["order_purchase_timestamp"].notna()
@@ -185,9 +213,9 @@ def build_olist_features(config: DatasetConfig | None = None) -> tuple[pd.DataFr
     order_items["Category_Diversity"] = order_items["Category_Diversity"].fillna(0)
     del items, products, enriched_items
     _log("Olist: aggregating payments and reviews")
-    payments = pd.read_csv(paths["payments"], usecols=["order_id", "payment_value"])
+    payments = pd.read_csv(paths["payments"], usecols=["order_id", "payment_value", "payment_installments"])
     raw_rows += len(payments)
-    order_payments = payments.groupby("order_id", as_index=False).agg(Payment_Value=("payment_value", "sum"))
+    order_payments = payments.groupby("order_id", as_index=False).agg(Payment_Value=("payment_value", "sum"), Avg_Installments=("payment_installments", "mean"))
     del payments
     reviews = pd.read_csv(paths["reviews"], usecols=["order_id", "review_score"])
     raw_rows += len(reviews)
@@ -203,6 +231,7 @@ def build_olist_features(config: DatasetConfig | None = None) -> tuple[pd.DataFr
     order_level = order_level.merge(order_reviews, on="order_id", how="left", validate="one_to_one")
     del order_reviews
     order_level["Payment_Value"] = order_level["Payment_Value"].fillna(order_level["item_value"] + order_level["freight_value"])
+    order_level["Avg_Delivery_Delay_Days"] = (order_level["order_delivered_customer_date"] - order_level["order_estimated_delivery_date"]).dt.total_seconds().div(86400)
     snapshot = order_level["order_purchase_timestamp"].max().normalize() + pd.Timedelta(days=1)
 
     _log("Olist: aggregating customer features")
@@ -215,6 +244,8 @@ def build_olist_features(config: DatasetConfig | None = None) -> tuple[pd.DataFr
         Category_Diversity=("Category_Diversity", "sum"),
         Average_Basket_Size=("Item_Count", "mean"),
         Average_Review_Score=("Average_Review_Score", "mean"),
+        Avg_Installments=("Avg_Installments", "mean"),
+        Avg_Delivery_Delay_Days=("Avg_Delivery_Delay_Days", "mean"),
     )
     order_level_count = len(order_level)
     del order_level
@@ -234,9 +265,12 @@ def build_olist_features(config: DatasetConfig | None = None) -> tuple[pd.DataFr
     return features, quality
 
 
-def build_customer_features(dataset: str) -> tuple[pd.DataFrame, dict]:
+def build_customer_features(dataset: str, return_temporal_split: bool = False) -> tuple[pd.DataFrame, dict] | tuple[pd.DataFrame, dict, pd.DataFrame | None]:
     if dataset == "online_retail_ii":
-        return build_online_retail_features()
+        return build_online_retail_features(return_temporal_split=return_temporal_split)
     if dataset == "olist":
-        return build_olist_features()
+        res = build_olist_features()
+        if return_temporal_split:
+            return res[0], res[1], None
+        return res
     raise ValueError(f"Unsupported dataset: {dataset}")

@@ -28,9 +28,22 @@ def artifact_paths(dataset: str) -> dict[str, Path]:
         "features": config.output_dir / "customer_features.csv",
         "assignments": config.output_dir / "customer_assignments.csv",
         "profiles": config.output_dir / "segment_profiles.csv",
+        "cluster_profiles": config.output_dir / "cluster_profiles.csv",
         "comparison": config.output_dir / "model_comparison.csv",
+        "algorithm_comparison": config.output_dir / "algorithm_comparison.csv",
+        "k_sweep": config.output_dir / "k_sweep.csv",
+        "stability": config.output_dir / "stability.csv",
+        "stability_summary": config.output_dir / "stability_summary.csv",
+        "cross_method_ari": config.output_dir / "cross_method_ari.csv",
+        "collinearity": config.output_dir / "collinearity_log.csv",
+        "gmm_membership": config.output_dir / "gmm_membership.csv",
+        "hdbscan_noise": config.output_dir / "hdbscan_noise.csv",
+        "temporal_validation": config.output_dir / "temporal_validation.csv",
+        "results": config.output_dir / "results.json",
+        "manifest": config.output_dir / "run_manifest.json",
         "metrics": config.output_dir / "metrics.json",
         "quality": config.output_dir / "data_quality.json",
+        "data_quality_csv": config.output_dir / "data_quality.csv",
         "pca": config.output_dir / "pca_clusters.csv",
         "bundle": config.model_dir / "model_bundle.pkl",
     }
@@ -45,14 +58,24 @@ def load_artifacts(dataset: str) -> dict[str, Any]:
 
 def artifacts_ready(dataset: str) -> bool:
     paths = artifact_paths(dataset)
-    return all(paths[key].exists() for key in ("bundle", "features", "assignments", "profiles", "comparison", "metrics"))
+    # The manifest is written by the current reproducible pipeline. Requiring it
+    # prevents the dashboard from presenting legacy, incompatible model bundles.
+    return all(paths[key].exists() for key in ("bundle", "features", "assignments", "profiles", "comparison", "metrics", "manifest"))
 
 
 def clean_numeric_frame(frame: pd.DataFrame, columns: list[str]) -> pd.DataFrame:
     clean = frame.loc[:, columns].copy()
     for column in columns:
-        clean[column] = pd.to_numeric(clean[column], errors="coerce")
-    return clean.replace([np.inf, -np.inf], np.nan)
+        col_s = clean[column]
+        if not pd.api.types.is_numeric_dtype(col_s):
+            col_s = pd.to_numeric(col_s, errors="coerce")
+        vals = col_s.to_numpy(dtype=float, copy=False)
+        np_inf = np.isinf(vals)
+        if np_inf.any():
+            col_s = col_s.copy()
+            col_s[np_inf] = np.nan
+        clean[column] = col_s
+    return clean
 
 
 def segment_recommendation(segment_name: str) -> str:

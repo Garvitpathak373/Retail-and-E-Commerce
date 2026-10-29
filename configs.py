@@ -2,8 +2,12 @@
 
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
 from pathlib import Path
+
+# Prevent joblib/loky physical core count warning on Windows sandbox
+os.environ.setdefault("LOKY_MAX_CPU_COUNT", str(os.cpu_count() or 4))
 
 
 PROJECT_DIR = Path(__file__).resolve().parent
@@ -11,6 +15,16 @@ DATA_DIR = PROJECT_DIR / "data"
 MODELS_DIR = PROJECT_DIR / "models"
 OUTPUTS_DIR = PROJECT_DIR / "outputs"
 RANDOM_STATE = 42
+K_SWEEP_VALUES = (2, 3, 4, 5, 6, 7, 8)
+CANDIDATE_K_VALUES = (3, 4, 5, 6)
+SILHOUETTE_TIE_TOLERANCE = 0.01
+BOOTSTRAP_RESAMPLES = 30
+RESEEDS = 30
+BOOTSTRAP_SAMPLE_FRACTION = 0.80
+GMM_BORDERLINE_THRESHOLD = 0.60
+RUN_HDBSCAN = False
+HDBSCAN_MIN_CLUSTER_SIZE = 20
+TEMPORAL_VALIDATION = {"cutoff": "2011-06-10", "window_days": 180}
 
 
 @dataclass(frozen=True)

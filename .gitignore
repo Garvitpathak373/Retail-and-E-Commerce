@@ -15,8 +15,7 @@ venv/
 env/
 
 # Raw datasets
-data/olist/
-data/online_retail_ii/
+data/
 
 # Generated models
 models/

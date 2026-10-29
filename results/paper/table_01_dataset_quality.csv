@@ -1,0 +1,3 @@
+Dataset,Raw_Rows,Cleaned_Rows,Rows_Removed,Customer_Count,Repeat_Customers,Repeat_Customer_Rate,Snapshot_Date
+Online Retail II,"1,067,371","812,295","255,076","5,878","4,277",72.8%,2011-12-10
+Brazilian E-Commerce (Olist),"547,593","96,478","451,115","93,358","2,801",3.0%,2018-08-30

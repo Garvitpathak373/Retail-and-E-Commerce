@@ -1,0 +1,6 @@
+Evaluation_Metric,System_Evaluated,Success_Rate,CI_95_Lower,CI_95_Upper,Sample_Size,Methodological_Note
+JSON Schema & Field Adherence,Rule-Based Deterministic Baseline,100.0%,100.0%,100.0%,12,Evaluated against verified cluster summary ground truth.
+Segment Identity Consistency,Rule-Based Deterministic Baseline,100.0%,100.0%,100.0%,12,Evaluated against verified cluster summary ground truth.
+Empirical Key Driver Concordance,Rule-Based Deterministic Baseline,100.0%,100.0%,100.0%,12,Evaluated against verified cluster summary ground truth.
+Zero Hallucinated Customer Identifiers,Rule-Based Deterministic Baseline,100.0%,100.0%,100.0%,12,Evaluated against verified cluster summary ground truth.
+Adversarial PII Interception Rate,Rule-Based Privacy Guardrail,100.0%,100.0%,100.0%,4,Adversarial prompts with injected Customer IDs and email addresses.
