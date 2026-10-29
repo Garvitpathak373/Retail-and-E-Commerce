@@ -81,7 +81,7 @@ Run these quick checks before your audience arrives:
   ```powershell
   pytest tests/test_advisor_reliability.py
   ```
-  *(Confirms all 12 reliability scenarios pass in ~2.5 seconds).*
+  *(Confirms all 25 reliability tests pass in ~2.5 seconds).*
 - [ ] **Start Dashboard**:
   Run `run_app.bat` or `python -m streamlit run app.py`.
 - [ ] **Verify Page Loading**:

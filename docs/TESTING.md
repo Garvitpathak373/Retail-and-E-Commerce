@@ -2,14 +2,14 @@
 
 ## 1. Test Architecture Overview
 
-The automated test suite uses `pytest` and contains **49 comprehensive tests** spanning unit, integration, statistical, security, UI navigation, and performance benchmarks.
+The automated test suite uses `pytest` and contains **69 comprehensive tests** spanning unit, integration, statistical, security, UI navigation, and performance benchmarks.
 
 ```
 project/
 └── tests/
-    ├── test_advisor_reliability.py    # 14 tests: AI Advisor, Intent Routing, API Fault-Tolerance
-    ├── test_paper_assets.py           # 18 tests: 300 DPI Figures, Benchmark, Privacy Guardrails
-    ├── test_performance_and_batch.py  #  9 tests: Caching, Batch Scoring, Light/Dark Modes, AppTest UI
+    ├── test_advisor_reliability.py    # 25 tests: AI Advisor, Intent Routing, API Fault-Tolerance
+    ├── test_paper_assets.py           # 26 tests: 300 DPI Figures, Benchmark, Privacy Guardrails
+    ├── test_performance_and_batch.py  # 10 tests: Caching, Batch Scoring, Light/Dark Modes, AppTest UI
     └── test_pipeline.py               #  8 tests: Math, Preprocessing, Multicollinearity, Stability
 ```
 

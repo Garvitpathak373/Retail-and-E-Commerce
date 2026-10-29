@@ -1,5 +1,19 @@
 # Changelog & Engineering History
 
+## [v2.8.0] - 2026-10-29
+### Changed & Stabilized
+- **AI Advisor Reliability & Stability Hardening (`llm_advisor.py`, `app.py`)**:
+  - Implemented thread-safe `GeminiCircuitBreaker` (sliding window, max failures, reset timeout) to guard against upstream 503/504 errors and API quota exhaustion.
+  - Added in-memory LRU caching with dynamic TTL for repeated customer advisory queries.
+  - Implemented candidate model failover (`gemini-flash-latest`, `gemini-2.5-flash`, etc.) with fail-fast semantics for upstream timeouts.
+  - Enhanced segment routing: exact and alias matching for high-risk customer segments routing accurately to `At-Risk Inactive Customers` with verified cluster medoids.
+  - Enforced transparent UI status badges (`🟢 GEMINI (LIVE)`, `⚪ Offline Mode`, `⚪ Dataset Analytics Fallback • Verified Data Grounding`).
+- **Test Suite Expansion & Quality Assurance**:
+  - Expanded automated test suite to **69 passing tests** across 4 modules (`test_advisor_reliability.py`: 25, `test_paper_assets.py`: 26, `test_performance_and_batch.py`: 10, `test_pipeline.py`: 8) with 100% pass rate.
+  - Added comprehensive verification tests for 300 DPI publication figures, LaTeX table schemas, and number provenance tracking.
+- **Documentation & Release Finalization**:
+  - Updated `README.md` and `docs/` to accurately reflect verified 69 test count, 20 publication figures in `results/paper/figures/`, and truthful Gemini live vs. offline fallback operational modes.
+
 ## [v2.7.0] - 2026-10-29
 ### Added
 - **Reproducible Academic Research Results Pipeline (`run_all.py`, `eval_llm.py`, `make_paper_assets.py`)**:
